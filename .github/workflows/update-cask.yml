@@ -1,0 +1,43 @@
+name: Update cask
+
+on:
+  repository_dispatch:
+    types: [release-published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to update to (e.g. 0.2.3)'
+        required: true
+
+jobs:
+  update-cask:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set version
+        run: echo "VERSION=${{ github.event.client_payload.version || github.event.inputs.version }}" >> $GITHUB_ENV
+
+      - name: Download DMGs and compute SHA256
+        run: |
+          curl -sL -o arm.dmg "https://github.com/MikaelWeiss/openchat/releases/download/v${VERSION}/Open.Chat_${VERSION}_aarch64.dmg"
+          curl -sL -o intel.dmg "https://github.com/MikaelWeiss/openchat/releases/download/v${VERSION}/Open.Chat_${VERSION}_x64.dmg"
+          echo "ARM_SHA=$(shasum -a 256 arm.dmg | awk '{print $1}')" >> $GITHUB_ENV
+          echo "INTEL_SHA=$(shasum -a 256 intel.dmg | awk '{print $1}')" >> $GITHUB_ENV
+
+      - name: Update cask file
+        run: |
+          sed -i '' "s/version \".*\"/version \"${VERSION}\"/" Casks/mikaelweiss-open-chat.rb
+          sed -i '' "s/arm:   \"[a-f0-9]*\"/arm:   \"${ARM_SHA}\"/" Casks/mikaelweiss-open-chat.rb
+          sed -i '' "s/intel: \"[a-f0-9]*\"/intel: \"${INTEL_SHA}\"/" Casks/mikaelweiss-open-chat.rb
+
+      - name: Commit and push
+        run: |
+          git diff --exit-code && echo "No changes" && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/mikaelweiss-open-chat.rb
+          git commit -m "Update Open Chat to v${VERSION}"
+          git push
