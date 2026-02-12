@@ -1,9 +1,9 @@
 cask "mikaelweiss-open-chat" do
   arch arm: "aarch64", intel: "x64"
 
-  version "0.2.3"
-  sha256 arm:   "f5ddcf1f20cb7379762e996777f8971642362ac346c844d7b15b91b8977fd959",
-         intel: "b0c1d06cae289530903bba9e0d7d18d3dd83ec68036768bc217aad9f856b1625"
+  version "1.0.0"
+  sha256 arm:   "ceb626618ea023423dee2b84bc2cbaada48c2d31377d984e4c7c18ea20875bdf",
+         intel: "fc36d76d0ae0260edafd94a03befa4298867400d4cf6e3c23ca541b29a584d8f"
 
   url "https://github.com/MikaelWeiss/openchat/releases/download/v#{version}/Open.Chat_#{version}_#{arch}.dmg"
   name "Open Chat"
